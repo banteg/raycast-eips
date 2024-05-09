@@ -147,6 +147,7 @@ export default function Command() {
 							<Action.OpenInBrowser
 								url={item.data["discussions-to"]}
 								title="Ethereum Magicians"
+								shortcut={{ modifiers: ["cmd"], key: "d" }}
 							/>
 						</ActionPanel>
 					}
