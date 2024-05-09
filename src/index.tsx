@@ -21,11 +21,15 @@ function EipMetadata({ item }: { item: Metadata }) {
 	const created = item.created.toISOString();
 	return (
 		<List.Item.Detail.Metadata>
-			<List.Item.Detail.Metadata.Link
-				target={item["discussions-to"]}
-				text={item["discussions-to"]}
-				title="discuss"
-			/>
+			<List.Item.Detail.Metadata.TagList title="tags">
+				{tags.map((tag) => (
+					<List.Item.Detail.Metadata.TagList.Item
+						key={tag}
+						text={tag}
+						color={"#eed535"}
+					/>
+				))}
+			</List.Item.Detail.Metadata.TagList>
 		</List.Item.Detail.Metadata>
 	);
 }
@@ -41,6 +45,7 @@ export default function Command() {
 	const [searchText, setSearchText] = useState("");
 
 	const data = useMemo(() => {
+		if (searchText === "") return [];
 		const base = "/users/banteg/dev/ethereum";
 		const search = searchText === "" ? "*" : searchText;
 		console.log(search);
@@ -50,7 +55,7 @@ export default function Command() {
 		])
 			.map((path) => ({
 				...matter(fs.readFileSync(path)),
-				kind: path.toLowerCase().includes("/eip-") ? "eip" : "erc",
+				kind: path.toLowerCase().includes("/eip-") ? "EIP" : "ERC",
 				github: path_to_github(path, base),
 			}))
 			.filter((item) => item.data.status !== "Moved")
@@ -61,33 +66,29 @@ export default function Command() {
 
 	return (
 		<List onSearchTextChange={setSearchText} throttle isShowingDetail>
-			{["eip", "erc"].map((kind) => (
-				<List.Section title={kind} key={kind}>
-					{data
-						.filter((item) => item.kind === kind)
-						.map((item) => (
-							<List.Item
-								key={`${item.kind}-${item.data.eip}`}
-								title={item.data.title ?? "??"}
-								subtitle={`${item.kind}-${item.data.eip}`}
-								detail={
-									<List.Item.Detail
-										markdown={`${JSON.stringify(item.data)} ${item.content}`}
-										metadata={<EipMetadata item={item.data} />}
-									/>
-								}
-								actions={
-									<ActionPanel title="action panel title">
-										<Action.OpenInBrowser url={item.github} title="GitHub" />
-										<Action.OpenInBrowser
-											url={item.data["discussions-to"]}
-											title="Ethereum Magicians"
-										/>
-									</ActionPanel>
-								}
+			{data.map((item) => (
+				<List.Item
+					key={`${item.kind}-${item.data.eip}`}
+					title={item.data.title ?? "??"}
+					subtitle={`${item.kind}-${item.data.eip}`}
+					detail={
+						<List.Item.Detail
+							markdown={`${JSON.stringify(item.data)} ${item.content}`}
+							metadata={<EipMetadata item={item.data} />}
+						/>
+					}
+					actions={
+						<ActionPanel
+							title={`${item.kind}-${item.data.eip} ${item.data.title}`}
+						>
+							<Action.OpenInBrowser url={item.github} title="GitHub" />
+							<Action.OpenInBrowser
+								url={item.data["discussions-to"]}
+								title="Ethereum Magicians"
 							/>
-						))}
-				</List.Section>
+						</ActionPanel>
+					}
+				/>
 			))}
 		</List>
 	);
