@@ -1,3 +1,3 @@
 # ethereum-eips
 
-Look up Ethereum EIPs by their number
+Look up Ethereum Proposals and read them in Raycast
