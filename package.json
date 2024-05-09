@@ -3,7 +3,7 @@
   "name": "ethereum-eips",
   "title": "ethereum-eips",
   "description": "Look up Ethereum EIPs by their number",
-  "icon": "command-icon.png",
+  "icon": "icon.png",
   "author": "banteg",
   "categories": [
     "Documentation"

@@ -139,7 +139,10 @@ export default function Command() {
 						<ActionPanel
 							title={`${item.kind}-${item.data.eip} ${item.data.title}`}
 						>
-							<Action.Push title="View" target={<EipDetail item={item} />} />
+							<Action.Push
+								title="Instant View"
+								target={<EipDetail item={item} />}
+							/>
 							<Action.OpenInBrowser url={item.github} title="GitHub" />
 							<Action.OpenInBrowser
 								url={item.data["discussions-to"]}
