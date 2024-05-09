@@ -14,6 +14,9 @@ importers:
       '@raycast/utils':
         specifier: ^1.4.8
         version: 1.15.0(@raycast/api@1.73.2(@types/node@20.8.10)(@types/react@18.2.27))
+      fuse.js:
+        specifier: ^7.0.0
+        version: 7.0.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -450,6 +453,10 @@ packages:
 
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
+
+  fuse.js@7.0.0:
+    resolution: {integrity: sha512-14F4hBIxqKvD4Zz/XjDc3y94mNZN6pRv3U13Udo0lNLCWRBUsrMv2xwcF/y/Z5sV6+FQW+/ow68cHpm4sunt8Q==}
+    engines: {node: '>=10'}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -1327,6 +1334,8 @@ snapshots:
       signal-exit: 4.1.0
 
   fs.realpath@1.0.0: {}
+
+  fuse.js@7.0.0: {}
 
   glob-parent@5.1.2:
     dependencies:

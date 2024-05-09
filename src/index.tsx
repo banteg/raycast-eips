@@ -1,10 +1,9 @@
 import fs from "node:fs";
-import { URLSearchParams } from "node:url";
 import { Action, ActionPanel, Detail, List } from "@raycast/api";
-import { type Response, useFetch } from "@raycast/utils";
+import Fuse from "fuse.js";
 import { globSync } from "glob";
 import matter from "gray-matter";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface Metadata {
 	eip: number;
@@ -39,6 +38,10 @@ const status_colors = {
 	Stagnant: "#AAAAAA", // dark grey
 	Withdrawn: "#FF69B4", // pink
 	Living: "#8BC34A", // lime green
+};
+
+const fuse_options = {
+	keys: ["data.eip", "data.title", "data.author", "content"],
 };
 
 function path_to_github(path: string, base: string) {
@@ -79,20 +82,30 @@ export function EipMetadata({ item }: { item: Metadata }) {
 }
 
 export function EipDetail({ item }) {
-	return <Detail markdown={item.content} />;
+	return (
+		<Detail
+			markdown={item.content}
+			actions={
+				<ActionPanel>
+					<Action.OpenInBrowser url={item.github} title="GitHub" />
+					<Action.OpenInBrowser
+						url={item.data["discussions-to"]}
+						title="Ethereum Magicians"
+					/>
+				</ActionPanel>
+			}
+		/>
+	);
 }
 
 export default function Command() {
 	const [searchText, setSearchText] = useState("");
 
-	const all_eips = useMemo(() => {
-		// if (searchText === "") return [];
+	const eips = useMemo(() => {
 		const base = "/users/banteg/dev/ethereum";
-		const search = searchText === "" ? "*" : searchText;
-		console.log(search);
 		const result = globSync([
-			`${base}/EIPs/EIPS/eip-${search}.md`,
-			`${base}/ERCs/ERCS/erc-${search}.md`,
+			`${base}/EIPs/EIPS/eip-*.md`,
+			`${base}/ERCs/ERCS/erc-*.md`,
 		])
 			.map((path) => ({
 				...matter(fs.readFileSync(path)),
@@ -104,11 +117,10 @@ export default function Command() {
 		return result;
 	}, []);
 
+	const fuse = new Fuse(eips, fuse_options);
 	const data = searchText
-		? all_eips.filter((item) => item.data.eip === Number(searchText))
-		: all_eips;
-
-	console.log(new Set(data.map((item) => item.data.status)));
+		? fuse.search(searchText).map((item) => item.item)
+		: eips;
 
 	return (
 		<List onSearchTextChange={setSearchText} isShowingDetail throttle>

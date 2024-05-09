@@ -20,6 +20,7 @@
   "dependencies": {
     "@raycast/api": "^1.73.2",
     "@raycast/utils": "^1.4.8",
+    "fuse.js": "^7.0.0",
     "glob": "^10.3.12",
     "gray-matter": "^4.0.3"
   },
