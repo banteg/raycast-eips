@@ -17,6 +17,16 @@
       "mode": "view"
     }
   ],
+  "preferences": [
+    {
+      "name": "repos_path",
+      "description": "A path to a folder containing EIPs and ERCs repositories",
+      "type": "directory",
+      "required": true,
+      "title": "Folder with EIPs and ERCs repos",
+      "placeholder": "/home/banteg/dev/ethereum"
+    }
+  ],
   "dependencies": {
     "@raycast/api": "^1.73.2",
     "@raycast/utils": "^1.4.8",

@@ -1,9 +1,20 @@
 import fs from "node:fs";
-import { Action, ActionPanel, Detail, List } from "@raycast/api";
+import {
+	Action,
+	ActionPanel,
+	Detail,
+	List,
+	getPreferenceValues,
+	openExtensionPreferences,
+} from "@raycast/api";
 import Fuse from "fuse.js";
 import { globSync } from "glob";
 import matter from "gray-matter";
 import { useMemo, useState } from "react";
+
+interface Preferences {
+	repos_path: string;
+}
 
 interface Metadata {
 	eip: number;
@@ -100,9 +111,10 @@ export function EipDetail({ item }) {
 
 export default function Command() {
 	const [searchText, setSearchText] = useState("");
+	const preferences = getPreferenceValues<Preferences>();
+	const base = preferences.repos_path;
 
 	const eips = useMemo(() => {
-		const base = "/users/banteg/dev/ethereum";
 		const result = globSync([
 			`${base}/EIPs/EIPS/eip-*.md`,
 			`${base}/ERCs/ERCS/erc-*.md`,
@@ -148,6 +160,10 @@ export default function Command() {
 								url={item.data["discussions-to"]}
 								title="Ethereum Magicians"
 								shortcut={{ modifiers: ["cmd"], key: "d" }}
+							/>
+							<Action
+								title="Open Preferences"
+								onAction={openExtensionPreferences}
 							/>
 						</ActionPanel>
 					}
