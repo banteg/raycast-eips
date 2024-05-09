@@ -16,19 +16,49 @@ interface Metadata {
 	"discussions-to": string;
 }
 
-function EipMetadata({ item }: { item: Metadata }) {
+const type_colors = {
+	"Standards Track": "#007bff", // blue
+	Meta: "#ffc107", // orange
+	Informational: "#28a745", // green
+};
+
+const category_colors = {
+	Core: "#8B0A1A", // deep red
+	Interface: "#4CAF50", // teal
+	Networking: "#2196F3", // blue-grey
+	ERC: "#FFC107", // vibrant orange
+};
+
+const status_colors = {
+	Idea: "#CCCCCC", // light grey
+	Draft: "#87CEEB", // sky blue
+	Review: "#F7DC6F", // yellow-orange
+	"Last Call": "#FFC107", // vibrant orange
+	Final: "#2ECC40", // bright green
+	Stagnant: "#AAAAAA", // dark grey
+	Withdrawn: "#FF69B4", // pink
+	Living: "#8BC34A", // lime green
+};
+
+export function EipMetadata({ item }: { item: Metadata }) {
 	const tags = [item.category, item.type, item.status];
 	const created = item.created.toISOString();
 	return (
 		<List.Item.Detail.Metadata>
-			<List.Item.Detail.Metadata.TagList title="tags">
-				{tags.map((tag) => (
-					<List.Item.Detail.Metadata.TagList.Item
-						key={tag}
-						text={tag}
-						color={"#eed535"}
-					/>
-				))}
+			<List.Item.Detail.Metadata.Label title="title" text={item.title} />
+			<List.Item.Detail.Metadata.TagList title="type / category / status">
+				<List.Item.Detail.Metadata.TagList.Item
+					text={item.type}
+					color={type_colors[item.type]}
+				/>
+				<List.Item.Detail.Metadata.TagList.Item
+					text={item.category}
+					color={category_colors[item.category]}
+				/>
+				<List.Item.Detail.Metadata.TagList.Item
+					text={item.status}
+					color={status_colors[item.status]}
+				/>
 			</List.Item.Detail.Metadata.TagList>
 		</List.Item.Detail.Metadata>
 	);
@@ -44,12 +74,12 @@ function path_to_github(path: string, base: string) {
 export default function Command() {
 	const [searchText, setSearchText] = useState("");
 
-	const data = useMemo(() => {
-		if (searchText === "") return [];
+	const all_eips = useMemo(() => {
+		// if (searchText === "") return [];
 		const base = "/users/banteg/dev/ethereum";
 		const search = searchText === "" ? "*" : searchText;
 		console.log(search);
-		return globSync([
+		const result = globSync([
 			`${base}/EIPs/EIPS/eip-${search}.md`,
 			`${base}/ERCs/ERCS/erc-${search}.md`,
 		])
@@ -58,14 +88,19 @@ export default function Command() {
 				kind: path.toLowerCase().includes("/eip-") ? "EIP" : "ERC",
 				github: path_to_github(path, base),
 			}))
-			.filter((item) => item.data.status !== "Moved")
-			.sort((item) => item.data.eip);
-	}, [searchText]);
+			.filter((item) => item.data.status !== "Moved");
+		result.sort((a, b) => a.data.eip - b.data.eip);
+		return result;
+	}, []);
 
-	console.log(data.map((item) => item.data.eip));
+	const data = searchText
+		? all_eips.filter((item) => item.data.eip === Number(searchText))
+		: all_eips;
+
+	console.log(new Set(data.map((item) => item.data.status)));
 
 	return (
-		<List onSearchTextChange={setSearchText} throttle isShowingDetail>
+		<List onSearchTextChange={setSearchText} isShowingDetail throttle>
 			{data.map((item) => (
 				<List.Item
 					key={`${item.kind}-${item.data.eip}`}
@@ -73,7 +108,7 @@ export default function Command() {
 					subtitle={`${item.kind}-${item.data.eip}`}
 					detail={
 						<List.Item.Detail
-							markdown={`${JSON.stringify(item.data)} ${item.content}`}
+							// markdown={`${JSON.stringify(item.data)} ${item.content}`}
 							metadata={<EipMetadata item={item.data} />}
 						/>
 					}
