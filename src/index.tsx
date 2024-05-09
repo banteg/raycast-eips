@@ -13,11 +13,18 @@ interface Metadata {
   eip: number;
   title: string;
   author: string;
-  status: string;
-  type: string;
-  category: string;
+  status: "Idea" | "Draft" | "Review" | "Last Call" | "Final" | "Stagnant" | "Withdrawn" | "Living";
+  type: "Standards Track" | "Meta" | "Informational";
+  category: "Core" | "Interface" | "Networking" | "ERC";
   created: Date;
   "discussions-to": string;
+}
+
+interface Item {
+  data: Metadata;
+  content: string;
+  github: string;
+  kind: "EIP" | "ERC";
 }
 
 const type_colors = {
@@ -55,23 +62,23 @@ function path_to_github(path: string, base: string) {
   return `https://github.com/ethereum/${repo}/blob/master/${tail}`;
 }
 
-export function EipMetadata({ item }: { item: Metadata }) {
+export function EipMetadata({ meta }: { meta: Metadata }) {
   return (
     <List.Item.Detail.Metadata>
-      <List.Item.Detail.Metadata.Label title="eip" text={item.eip.toString()} />
-      <List.Item.Detail.Metadata.Label title="title" text={item.title} />
-      <List.Item.Detail.Metadata.Label title="author" text={item.author} />
-      <List.Item.Detail.Metadata.Label title="created" text={item.created.toISOString()} />
+      <List.Item.Detail.Metadata.Label title="eip" text={meta.eip.toString()} />
+      <List.Item.Detail.Metadata.Label title="title" text={meta.title} />
+      <List.Item.Detail.Metadata.Label title="author" text={meta.author} />
+      <List.Item.Detail.Metadata.Label title="created" text={meta.created.toISOString()} />
       <List.Item.Detail.Metadata.TagList title="type / category / status">
-        <List.Item.Detail.Metadata.TagList.Item text={item.type} color={type_colors[item.type]} />
-        <List.Item.Detail.Metadata.TagList.Item text={item.category} color={category_colors[item.category]} />
-        <List.Item.Detail.Metadata.TagList.Item text={item.status} color={status_colors[item.status]} />
+        <List.Item.Detail.Metadata.TagList.Item text={meta.type} color={type_colors[meta.type]} />
+        <List.Item.Detail.Metadata.TagList.Item text={meta.category} color={category_colors[meta.category]} />
+        <List.Item.Detail.Metadata.TagList.Item text={meta.status} color={status_colors[meta.status]} />
       </List.Item.Detail.Metadata.TagList>
     </List.Item.Detail.Metadata>
   );
 }
 
-export function EipDetail({ item }) {
+export function EipDetail({ item }: { item: Item }) {
   return (
     <Detail
       markdown={item.content}
@@ -103,7 +110,8 @@ export default function Command() {
   }, []);
 
   const fuse = new Fuse(eips, fuse_options);
-  const data = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
+  // @ts-ignore
+  const data: Item[] = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
 
   return (
     <List onSearchTextChange={setSearchText} isShowingDetail throttle>
@@ -115,7 +123,7 @@ export default function Command() {
           detail={
             <List.Item.Detail
               // markdown={`${JSON.stringify(item.data)} ${item.content}`}
-              metadata={<EipMetadata item={item.data} />}
+              metadata={<EipMetadata meta={item.data} />}
             />
           }
           actions={
