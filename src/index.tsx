@@ -5,7 +5,6 @@ import {
 	Detail,
 	List,
 	getPreferenceValues,
-	openExtensionPreferences,
 } from "@raycast/api";
 import Fuse from "fuse.js";
 import { globSync } from "glob";
@@ -160,10 +159,6 @@ export default function Command() {
 								url={item.data["discussions-to"]}
 								title="Ethereum Magicians"
 								shortcut={{ modifiers: ["cmd"], key: "d" }}
-							/>
-							<Action
-								title="Open Preferences"
-								onAction={openExtensionPreferences}
 							/>
 						</ActionPanel>
 					}
