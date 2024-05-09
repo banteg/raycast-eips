@@ -13,42 +13,45 @@ interface Metadata {
   eip: number;
   title: string;
   author: string;
-  status: "Idea" | "Draft" | "Review" | "Last Call" | "Final" | "Stagnant" | "Withdrawn" | "Living";
+  status: "Idea" | "Draft" | "Review" | "Last Call" | "Final" | "Stagnant" | "Withdrawn" | "Living" | "Moved";
   type: "Standards Track" | "Meta" | "Informational";
   category: "Core" | "Interface" | "Networking" | "ERC";
   created: Date;
   "discussions-to": string;
 }
 
-interface Item {
+type EipKind = "EIP" | "ERC";
+
+interface EipFile {
   data: Metadata;
   content: string;
   github: string;
-  kind: "EIP" | "ERC";
+  kind: EipKind;
 }
 
 const type_colors = {
-  "Standards Track": "#007bff", // blue
-  Meta: "#ffc107", // orange
-  Informational: "#28a745", // green
+  "Standards Track": "#007bff",
+  Meta: "#ffc107",
+  Informational: "#28a745",
 };
 
 const category_colors = {
-  Core: "#8B0A1A", // deep red
-  Interface: "#4CAF50", // teal
-  Networking: "#2196F3", // blue-grey
-  ERC: "#FFC107", // vibrant orange
+  Core: "#8B0A1A",
+  Interface: "#4CAF50",
+  Networking: "#2196F3",
+  ERC: "#FFC107",
 };
 
 const status_colors = {
-  Idea: "#CCCCCC", // light grey
-  Draft: "#87CEEB", // sky blue
-  Review: "#F7DC6F", // yellow-orange
-  "Last Call": "#FFC107", // vibrant orange
-  Final: "#2ECC40", // bright green
-  Stagnant: "#AAAAAA", // dark grey
-  Withdrawn: "#FF69B4", // pink
-  Living: "#8BC34A", // lime green
+  Idea: "#CCCCCC",
+  Draft: "#87CEEB",
+  Review: "#F7DC6F",
+  "Last Call": "#FFC107",
+  Final: "#2ECC40",
+  Stagnant: "#AAAAAA",
+  Withdrawn: "#FF69B4",
+  Living: "#8BC34A",
+  Moved: "#8B0A1A",
 };
 
 const fuse_options = {
@@ -78,7 +81,7 @@ export function EipMetadata({ meta }: { meta: Metadata }) {
   );
 }
 
-export function EipDetail({ item }: { item: Item }) {
+export function EipDetail({ item }: { item: EipFile }) {
   return (
     <Detail
       markdown={item.content}
@@ -98,20 +101,21 @@ export default function Command() {
   const base = preferences.repos_path;
 
   const eips = useMemo(() => {
-    const result = globSync([`${base}/EIPs/EIPS/eip-*.md`, `${base}/ERCs/ERCS/erc-*.md`])
-      .map((path) => ({
-        ...matter(fs.readFileSync(path)),
-        kind: path.toLowerCase().includes("/eip-") ? "EIP" : "ERC",
+    const files = globSync([`${base}/EIPs/EIPS/eip-*.md`, `${base}/ERCs/ERCS/erc-*.md`]);
+    const matters = files.map((path) => {
+      const md = matter(fs.readFileSync(path));
+      return {
+        data: md.data as Metadata,
+        content: md.content,
+        kind: (path.toLowerCase().includes("/eip-") ? "EIP" : "ERC") as EipKind,
         github: path_to_github(path, base),
-      }))
-      .filter((item) => item.data.status !== "Moved");
-    result.sort((a, b) => a.data.eip - b.data.eip);
-    return result;
+      };
+    });
+    return matters.filter((item) => item.data.status !== "Moved");
   }, []);
 
   const fuse = new Fuse(eips, fuse_options);
-  // @ts-ignore
-  const data: Item[] = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
+  const data: EipFile[] = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
 
   return (
     <List onSearchTextChange={setSearchText} isShowingDetail throttle>
@@ -120,12 +124,7 @@ export default function Command() {
           key={`${item.kind}-${item.data.eip}`}
           title={item.data.title ?? "??"}
           subtitle={`${item.kind}-${item.data.eip}`}
-          detail={
-            <List.Item.Detail
-              // markdown={`${JSON.stringify(item.data)} ${item.content}`}
-              metadata={<EipMetadata meta={item.data} />}
-            />
-          }
+          detail={<List.Item.Detail metadata={<EipMetadata meta={item.data} />} />}
           actions={
             <ActionPanel title={`${item.kind}-${item.data.eip} ${item.data.title}`}>
               <Action.Push title="Instant View" target={<EipDetail item={item} />} />
