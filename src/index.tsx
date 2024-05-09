@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 
 interface Metadata {
 	eip: number;
+	title: string;
 	author: string;
 	status: string;
 	type: string;
@@ -40,12 +41,25 @@ const status_colors = {
 	Living: "#8BC34A", // lime green
 };
 
+function path_to_github(path: string, base: string) {
+	const parts = path.replace(base, "").split("/");
+	const repo = parts[1];
+	const tail = parts.slice(2).join("/");
+	return `https://github.com/ethereum/${repo}/blob/master/${tail}`;
+}
+
 export function EipMetadata({ item }: { item: Metadata }) {
 	const tags = [item.category, item.type, item.status];
 	const created = item.created.toISOString();
 	return (
 		<List.Item.Detail.Metadata>
+			<List.Item.Detail.Metadata.Label title="eip" text={item.eip.toString()} />
 			<List.Item.Detail.Metadata.Label title="title" text={item.title} />
+			<List.Item.Detail.Metadata.Label title="author" text={item.author} />
+			<List.Item.Detail.Metadata.Label
+				title="created"
+				text={item.created.toISOString()}
+			/>
 			<List.Item.Detail.Metadata.TagList title="type / category / status">
 				<List.Item.Detail.Metadata.TagList.Item
 					text={item.type}
@@ -64,11 +78,8 @@ export function EipMetadata({ item }: { item: Metadata }) {
 	);
 }
 
-function path_to_github(path: string, base: string) {
-	const parts = path.replace(base, "").split("/");
-	const repo = parts[1];
-	const tail = parts.slice(2).join("/");
-	return `https://github.com/ethereum/${repo}/blob/master/${tail}`;
+export function EipDetail({ item }) {
+	return <Detail markdown={item.content} />;
 }
 
 export default function Command() {
@@ -116,6 +127,7 @@ export default function Command() {
 						<ActionPanel
 							title={`${item.kind}-${item.data.eip} ${item.data.title}`}
 						>
+							<Action.Push title="View" target={<EipDetail item={item} />} />
 							<Action.OpenInBrowser url={item.github} title="GitHub" />
 							<Action.OpenInBrowser
 								url={item.data["discussions-to"]}
