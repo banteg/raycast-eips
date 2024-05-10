@@ -5,6 +5,7 @@ import Fuse from "fuse.js";
 import { globSync } from "glob";
 import matter from "gray-matter";
 import { useEffect, useMemo, useState } from "react";
+import "@total-typescript/ts-reset";
 
 interface Preferences {
   repos_path: string;
