@@ -97,9 +97,81 @@ export function EipDetail({ item }: { item: EipFile }) {
   );
 }
 
+export function ActionFavorites({
+  favorites,
+  set_favorites,
+  eip,
+}: {
+  favorites: number[];
+  set_favorites: (value: number[]) => void;
+  eip: number;
+}) {
+  const is_fav = favorites.includes(eip);
+  return (
+    <Action
+      title={is_fav ? "Remove from Favorites" : "Add to Favorites"}
+      onAction={() => {
+        is_fav ? set_favorites(favorites.filter((item) => item !== eip)) : set_favorites([...favorites, eip]);
+      }}
+      shortcut={{ modifiers: ["cmd"], key: "f" }}
+    />
+  );
+}
+
+function EipListItem({
+  item,
+  favorites,
+  set_favorites,
+}: {
+  item: EipFile;
+  favorites: number[];
+  set_favorites: (value: number[]) => void;
+}) {
+  const accessories = [
+    item.data.type && { text: { value: item.data.type.replace("s Track", ""), color: type_colors[item.data.type] } },
+    item.data.category && { text: { value: item.data.category, color: category_colors[item.data.category] } },
+    item.data.status && { text: { value: item.data.status, color: status_colors[item.data.status] } },
+    { date: item.data.created },
+    favorites.includes(item.data.eip) && { icon: Icon.Star },
+  ].filter(Boolean);
+  const eip = `${item.kind}-${item.data.eip}`;
+
+  return (
+    <List.Item
+      key={eip}
+      title={item.data.title ?? "??"}
+      subtitle={eip}
+      accessories={accessories}
+      detail={<List.Item.Detail metadata={<EipMetadata meta={item.data} />} />}
+      actions={
+        <ActionPanel title={`${eip}: ${item.data.title}`}>
+          <Action.Push title="Instant View" icon={Icon.Book} target={<EipDetail item={item} />} />
+          <Action.OpenInBrowser url={item.github} title="GitHub" />
+          <Action.OpenInBrowser
+            url={item.data["discussions-to"]}
+            title="Ethereum Magicians"
+            shortcut={{ modifiers: ["cmd"], key: "d" }}
+          />
+          <Action
+            title={favorites.includes(item.data.eip) ? "Remove from Favorites" : "Add to Favorites"}
+            icon={Icon.Star}
+            onAction={() => {
+              favorites.includes(item.data.eip)
+                ? set_favorites(favorites.filter((fav) => fav !== item.data.eip))
+                : set_favorites([...favorites, item.data.eip]);
+            }}
+            shortcut={{ modifiers: ["cmd"], key: "f" }}
+          />
+        </ActionPanel>
+      }
+    />
+  );
+}
+
 export default function Command() {
   const [searchText, setSearchText] = useState("");
   const preferences = getPreferenceValues<Preferences>();
+  const { value: favorites, setValue: set_favorites } = useLocalStorage<number[]>("favorite_eips", []);
   const base = preferences.repos_path;
 
   const eips = useMemo(() => {
@@ -119,26 +191,26 @@ export default function Command() {
   const fuse = new Fuse(eips, fuse_options);
   const data: EipFile[] = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
 
+  if (searchText)
+    return (
+      <List onSearchTextChange={setSearchText} throttle>
+        {data.map((item) => (
+          <EipListItem key={item.data.eip} item={item} favorites={favorites ?? []} set_favorites={set_favorites} />
+        ))}
+      </List>
+    );
+
+  // show favorites first when not searching
   return (
-    <List onSearchTextChange={setSearchText} isShowingDetail throttle>
-      {data.map((item) => (
-        <List.Item
-          key={`${item.kind}-${item.data.eip}`}
-          title={item.data.title ?? "??"}
-          subtitle={`${item.kind}-${item.data.eip}`}
-          detail={<List.Item.Detail metadata={<EipMetadata meta={item.data} />} />}
-          actions={
-            <ActionPanel title={`${item.kind}-${item.data.eip} ${item.data.title}`}>
-              <Action.Push title="Instant View" target={<EipDetail item={item} />} />
-              <Action.OpenInBrowser url={item.github} title="GitHub" />
-              <Action.OpenInBrowser
-                url={item.data["discussions-to"]}
-                title="Ethereum Magicians"
-                shortcut={{ modifiers: ["cmd"], key: "d" }}
-              />
-            </ActionPanel>
-          }
-        />
+    <List onSearchTextChange={setSearchText} throttle>
+      {[true, false].map((fav) => (
+        <List.Section key={`fav-${fav}`} title={fav ? "Favorites" : "Other"}>
+          {data
+            .filter((item) => favorites?.includes(item.data.eip) === fav)
+            .map((item) => (
+              <EipListItem key={item.data.eip} item={item} favorites={favorites ?? []} set_favorites={set_favorites} />
+            ))}
+        </List.Section>
       ))}
     </List>
   );
