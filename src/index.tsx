@@ -1,11 +1,11 @@
-import fs from "node:fs";
 import { Action, ActionPanel, Color, Detail, Icon, List, getPreferenceValues } from "@raycast/api";
 import { useLocalStorage } from "@raycast/utils";
+import "@total-typescript/ts-reset";
+import fs from "node:fs";
 import Fuse from "fuse.js";
 import { globSync } from "glob";
 import matter from "gray-matter";
-import { useEffect, useMemo, useState } from "react";
-import "@total-typescript/ts-reset";
+import { useMemo, useState } from "react";
 
 interface Preferences {
   repos_path: string;
