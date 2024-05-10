@@ -11,18 +11,21 @@ interface Preferences {
   repos_path: string;
 }
 
+type EipStatus = "Idea" | "Draft" | "Review" | "Last Call" | "Final" | "Stagnant" | "Withdrawn" | "Living" | "Moved";
+type EipType = "Standards Track" | "Meta" | "Informational";
+type EipCategory = "Core" | "Interface" | "Networking" | "ERC";
+type EipKind = "EIP" | "ERC";
+
 interface Metadata {
   eip: number;
   title: string;
   author: string;
-  status: "Idea" | "Draft" | "Review" | "Last Call" | "Final" | "Stagnant" | "Withdrawn" | "Living" | "Moved";
-  type: "Standards Track" | "Meta" | "Informational";
-  category: "Core" | "Interface" | "Networking" | "ERC";
+  status: EipStatus;
+  type: EipType;
+  category: EipCategory;
   created: Date;
   "discussions-to": string;
 }
-
-type EipKind = "EIP" | "ERC";
 
 interface EipFile {
   data: Metadata;
@@ -31,20 +34,20 @@ interface EipFile {
   kind: EipKind;
 }
 
-const type_colors = {
+const type_colors: Record<EipType, Color> = {
   "Standards Track": Color.Blue,
   Meta: Color.Green,
   Informational: Color.Magenta,
 };
 
-const category_colors = {
+const category_colors: Record<EipCategory, Color> = {
   Core: Color.Blue,
   Interface: Color.Magenta,
   Networking: Color.Green,
   ERC: Color.Purple,
 };
 
-const status_colors = {
+const status_colors: Record<EipStatus, Color> = {
   Idea: Color.PrimaryText,
   Draft: Color.Yellow,
   Review: Color.Purple,
