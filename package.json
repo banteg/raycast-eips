@@ -23,7 +23,7 @@
       "description": "A path to a folder containing EIPs and ERCs repositories",
       "type": "directory",
       "required": true,
-      "title": "Folder with EIPs and ERCs repos",
+      "title": "Folder with EIPs and ERCs repos"
     }
   ],
   "dependencies": {
