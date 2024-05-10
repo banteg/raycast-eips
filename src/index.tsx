@@ -1,11 +1,12 @@
-import { Action, ActionPanel, Color, Detail, Icon, List, getPreferenceValues } from "@raycast/api";
+import { Action, ActionPanel, Color, Detail, Icon, List, Toast, getPreferenceValues, showToast } from "@raycast/api";
 import { useLocalStorage } from "@raycast/utils";
 import "@total-typescript/ts-reset";
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import Fuse from "fuse.js";
 import { globSync } from "glob";
 import matter from "gray-matter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface Preferences {
   repos_path: string;
@@ -70,7 +71,9 @@ function path_to_github(path: string, base: string) {
   return `https://github.com/ethereum/${repo}/blob/master/${tail}`;
 }
 
-function load_eips_from_disk(base: string) {
+function load_eips_from_disk() {
+  const base = getPreferenceValues<Preferences>().repos_path;
+  console.log("loading from", base);
   const files = globSync([`${base}/EIPs/EIPS/eip-*.md`, `${base}/ERCs/ERCS/erc-*.md`]);
   const matters = files.map((path) => {
     const md = matter(fs.readFileSync(path));
@@ -84,6 +87,35 @@ function load_eips_from_disk(base: string) {
   return matters.filter((item) => item.data.status !== "Moved");
 }
 
+async function update_repos() {
+  const base = getPreferenceValues<Preferences>().repos_path;
+  for (const repo of ["EIPs", "ERCs"]) {
+    const path = `${base}/${repo}`;
+    if (fs.existsSync(path)) {
+      const toast = await showToast({ title: "Updating", message: repo, style: Toast.Style.Animated });
+      try {
+        execSync("git pull", { cwd: path, encoding: "utf-8" });
+        toast.style = Toast.Style.Success;
+        toast.message = undefined;
+        toast.title = "Updated";
+      } catch (err) {
+        toast.title = "Failed to update";
+        toast.style = Toast.Style.Failure;
+      }
+    } else {
+      const toast = await showToast({ title: "Cloning", message: repo, style: Toast.Style.Animated });
+      console.log(`git clone ethereum/${repo}`);
+      try {
+        execSync(`git clone https://github.com/ethereum/${repo}.git`, { cwd: base, encoding: "utf-8" });
+        toast.title = "Cloned";
+        toast.style = Toast.Style.Success;
+        toast.message = base;
+      } catch (err) {
+        toast.title = "Failed to clone";
+        toast.style = Toast.Style.Failure;
+      }
+    }
+  }
 }
 
 export function EipDetail({ item }: { item: EipFile }) {
@@ -184,6 +216,10 @@ export default function Command() {
   const eips = useMemo(() => load_eips_from_disk(preferences.repos_path), []);
   const fuse = new Fuse(eips, fuse_options);
   const data: EipFile[] = searchText ? fuse.search(searchText).map((res) => res.item) : eips;
+
+  useEffect(() => {
+    update_repos();
+  }, []);
 
   if (searchText)
     return (
