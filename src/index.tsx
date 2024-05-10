@@ -61,7 +61,7 @@ const status_colors: Record<EipStatus, Color> = {
 };
 
 const fuse_options = {
-  keys: ["data.eip", "data.title", "data.type", "data.category", "data.status", "data.author", "content"],
+  keys: ["data.eip", "eip", "data.title", "data.type", "data.category", "data.status", "data.author", "content"],
 };
 
 function path_to_github(path: string, base: string) {
