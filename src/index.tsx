@@ -27,6 +27,7 @@ interface EipFile {
   content: string;
   github: string;
   kind: EipKind;
+  website: string;
 }
 
 const type_colors = {
@@ -65,6 +66,11 @@ function path_to_github(path: string, base: string) {
   return `https://github.com/ethereum/${repo}/blob/master/${tail}`;
 }
 
+function path_to_website(path: string) {
+  const number = path.split("/").pop()?.split(".")[0]?.split("-").pop();
+  return `https://eips.ethereum.org/EIPS/eip-${number}`;
+}
+
 export function EipMetadata({ meta }: { meta: Metadata }) {
   return (
     <List.Item.Detail.Metadata>
@@ -88,7 +94,8 @@ export function EipDetail({ item }: { item: EipFile }) {
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={item.github} title="GitHub" />
-          <Action.OpenInBrowser url={item.data["discussions-to"]} title="Ethereum Magicians" />
+          <Action.OpenInBrowser url={item.website} title="EIP Website" shortcut={{ modifiers: ["cmd"], key: "e" }} />
+          <Action.OpenInBrowser url={item.data["discussions-to"]} title="Ethereum Magicians" shortcut={{ modifiers: ["cmd"], key: "d" }} />
         </ActionPanel>
       }
     />
@@ -109,6 +116,7 @@ export default function Command() {
         content: md.content,
         kind: (path.toLowerCase().includes("/eip-") ? "EIP" : "ERC") as EipKind,
         github: path_to_github(path, base),
+        website: path_to_website(path),
       };
     });
     return matters.filter((item) => item.data.status !== "Moved");
@@ -129,6 +137,7 @@ export default function Command() {
             <ActionPanel title={`${item.kind}-${item.data.eip} ${item.data.title}`}>
               <Action.Push title="Instant View" target={<EipDetail item={item} />} />
               <Action.OpenInBrowser url={item.github} title="GitHub" />
+              <Action.OpenInBrowser url={item.website} title="EIP Website" shortcut={{ modifiers: ["cmd"], key: "e" }} />
               <Action.OpenInBrowser
                 url={item.data["discussions-to"]}
                 title="Ethereum Magicians"
