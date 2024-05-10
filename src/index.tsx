@@ -212,20 +212,25 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const preferences = getPreferenceValues<Preferences>();
   const { value: favorites, setValue: set_favorites } = useLocalStorage<number[]>("favorite_eips", []);
-  const { value: last_update, setValue: set_last_update } = useLocalStorage<number>("last_update", 0);
+  const {
+    value: last_update,
+    setValue: set_last_update,
+    isLoading: last_update_loading,
+  } = useLocalStorage<number>("last_update", 0);
 
-  const eips = useMemo(() => load_eips_from_disk(preferences.repos_path), []);
+  const eips = useMemo(() => load_eips_from_disk(), []);
   const fuse = new Fuse(eips, fuse_options);
   const data: EipFile[] = searchText ? fuse.search(searchText).map((res) => res.item) : eips;
 
   useEffect(() => {
+    if (last_update_loading) return;
     const now = new Date().valueOf();
-    if (now - (last_update ?? 0) > 86_400_000) {
+    const one_day_ms = 86_400_000;
+    if (now - (last_update ?? 0) > one_day_ms) {
       update_repos();
-      return;
+      set_last_update(now);
     }
-    console.log("already updated recently");
-  }, []);
+  }, [last_update]);
 
   if (searchText)
     return (
