@@ -24,7 +24,6 @@
       "type": "directory",
       "required": true,
       "title": "Folder with EIPs and ERCs repos",
-      "placeholder": "/home/banteg/dev/ethereum"
     }
   ],
   "dependencies": {
