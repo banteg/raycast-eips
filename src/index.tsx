@@ -1,9 +1,10 @@
 import fs from "node:fs";
-import { Action, ActionPanel, Detail, List, getPreferenceValues } from "@raycast/api";
+import { Action, ActionPanel, Color, Detail, Icon, List, getPreferenceValues } from "@raycast/api";
+import { useLocalStorage } from "@raycast/utils";
 import Fuse from "fuse.js";
 import { globSync } from "glob";
 import matter from "gray-matter";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface Preferences {
   repos_path: string;
@@ -30,28 +31,28 @@ interface EipFile {
 }
 
 const type_colors = {
-  "Standards Track": "#007bff",
-  Meta: "#ffc107",
-  Informational: "#28a745",
+  "Standards Track": Color.Blue,
+  Meta: Color.Green,
+  Informational: Color.Magenta,
 };
 
 const category_colors = {
-  Core: "#8B0A1A",
-  Interface: "#4CAF50",
-  Networking: "#2196F3",
-  ERC: "#FFC107",
+  Core: Color.Blue,
+  Interface: Color.Magenta,
+  Networking: Color.Green,
+  ERC: Color.Purple,
 };
 
 const status_colors = {
-  Idea: "#CCCCCC",
-  Draft: "#87CEEB",
-  Review: "#F7DC6F",
-  "Last Call": "#FFC107",
-  Final: "#2ECC40",
-  Stagnant: "#AAAAAA",
-  Withdrawn: "#FF69B4",
-  Living: "#8BC34A",
-  Moved: "#8B0A1A",
+  Idea: Color.PrimaryText,
+  Draft: Color.Yellow,
+  Review: Color.Purple,
+  "Last Call": Color.Orange,
+  Final: Color.Blue,
+  Stagnant: Color.Magenta,
+  Withdrawn: Color.Red,
+  Living: Color.Green,
+  Moved: Color.SecondaryText,
 };
 
 const fuse_options = {
