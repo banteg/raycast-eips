@@ -31,7 +31,7 @@ interface EipFile {
   data: Metadata;
   content: string;
   github: string;
-  eip: `ERC-${string}` | `EIP-${string}`;
+  eip: string;
 }
 
 const type_colors: Record<EipType, Color> = {
@@ -198,7 +198,7 @@ export default function Command() {
 
   const eips = useMemo(() => load_eips_from_disk(preferences.repos_path), []);
   const fuse = new Fuse(eips, fuse_options);
-  const data: EipFile[] = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
+  const data: EipFile[] = searchText ? fuse.search(searchText).map((res) => res.item) : eips;
 
   if (searchText)
     return (
