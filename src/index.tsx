@@ -118,7 +118,15 @@ async function update_repos() {
   }
 }
 
-export function EipDetail({ item }: { item: EipFile }) {
+export function EipDetail({
+  item,
+  favorites,
+  set_favorites,
+}: {
+  item: EipFile;
+  favorites: number[];
+  set_favorites: (value: number[]) => void;
+}) {
   const meta = [
     `# ${item.eip}: ${item.data.title}`,
     `${item.data.type} / ${item.data.category} / ${item.data.status}`,
@@ -133,6 +141,7 @@ export function EipDetail({ item }: { item: EipFile }) {
         <ActionPanel>
           <Action.OpenInBrowser url={item.github} title="GitHub" />
           <Action.OpenInBrowser url={item.data["discussions-to"]} title="Ethereum Magicians" />
+          <ActionFavorite item={item} favorites={favorites} set_favorites={set_favorites} />
         </ActionPanel>
       }
     />
@@ -160,6 +169,29 @@ export function ActionFavorites({
   );
 }
 
+function ActionFavorite({
+  item,
+  favorites,
+  set_favorites,
+}: {
+  item: EipFile;
+  favorites: number[];
+  set_favorites: (value: number[]) => void;
+}) {
+  return (
+    <Action
+      title={favorites.includes(item.data.eip) ? "Remove from Favorites" : "Add to Favorites"}
+      icon={Icon.Star}
+      onAction={() => {
+        favorites.includes(item.data.eip)
+          ? set_favorites(favorites.filter((fav) => fav !== item.data.eip))
+          : set_favorites([...favorites, item.data.eip]);
+      }}
+      shortcut={{ modifiers: ["cmd"], key: "f" }}
+    />
+  );
+}
+
 function EipListItem({
   item,
   favorites,
@@ -180,28 +212,23 @@ function EipListItem({
   return (
     <List.Item
       key={item.eip}
-      title={item.data.title ?? "??"}
+      title={item.data.title}
       subtitle={item.eip}
       accessories={accessories}
       actions={
         <ActionPanel title={`${item.eip}: ${item.data.title}`}>
-          <Action.Push title="Instant View" icon={Icon.Book} target={<EipDetail item={item} />} />
+          <Action.Push
+            title="Instant View"
+            icon={Icon.Book}
+            target={<EipDetail item={item} favorites={favorites} set_favorites={set_favorites} />}
+          />
           <Action.OpenInBrowser url={item.github} title="GitHub" />
           <Action.OpenInBrowser
             url={item.data["discussions-to"]}
             title="Ethereum Magicians"
             shortcut={{ modifiers: ["cmd"], key: "d" }}
           />
-          <Action
-            title={favorites.includes(item.data.eip) ? "Remove from Favorites" : "Add to Favorites"}
-            icon={Icon.Star}
-            onAction={() => {
-              favorites.includes(item.data.eip)
-                ? set_favorites(favorites.filter((fav) => fav !== item.data.eip))
-                : set_favorites([...favorites, item.data.eip]);
-            }}
-            shortcut={{ modifiers: ["cmd"], key: "f" }}
-          />
+          <ActionFavorite item={item} favorites={favorites} set_favorites={set_favorites} />
         </ActionPanel>
       }
     />
