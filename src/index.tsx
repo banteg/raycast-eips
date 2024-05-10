@@ -248,6 +248,8 @@ export default function Command() {
         <List.Section key={`fav-${fav}`} title={fav ? "Favorites" : "Other"}>
           {data
             .filter((item) => favorites?.includes(item.data.eip) === fav)
+            .slice()
+            .sort((a, b) => a.data.eip - b.data.eip)
             .map((item) => (
               <EipListItem key={item.data.eip} item={item} favorites={favorites ?? []} set_favorites={set_favorites} />
             ))}
