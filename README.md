@@ -18,4 +18,4 @@ gh repo clone ethereum/EIPs
 gh repo clone ethereum/ERCs
 ```
 
-The current repo will clone them auotmatically and then will update them once a day.
+The current repo will clone them automatically and then will update them once a day.
