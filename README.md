@@ -2,6 +2,8 @@
 
 Look up Ethereum Proposals and read them in Raycast.
 
+![](metadata/ethereum-eips-1.png)
+
 ```sh
 gh repo clone banteg/raycast-eips
 cd raycast-eips
