@@ -31,7 +31,7 @@ interface EipFile {
   data: Metadata;
   content: string;
   github: string;
-  kind: EipKind;
+  eip: `ERC-${string}` | `EIP-${string}`;
 }
 
 const type_colors: Record<EipType, Color> = {
@@ -70,6 +70,20 @@ function path_to_github(path: string, base: string) {
   return `https://github.com/ethereum/${repo}/blob/master/${tail}`;
 }
 
+function load_eips_from_disk(base: string) {
+  const files = globSync([`${base}/EIPs/EIPS/eip-*.md`, `${base}/ERCs/ERCS/erc-*.md`]);
+  const matters = files.map((path) => {
+    const md = matter(fs.readFileSync(path));
+    return {
+      data: md.data as Metadata,
+      content: md.content,
+      github: path_to_github(path, base),
+      eip: path.toLowerCase().includes("/eip-") ? `EIP-${md.data.eip}` : `ERC-${md.data.eip}`,
+    };
+  });
+  return matters.filter((item) => item.data.status !== "Moved");
+}
+
 export function EipMetadata({ meta }: { meta: Metadata }) {
   return (
     <List.Item.Detail.Metadata>
@@ -88,7 +102,7 @@ export function EipMetadata({ meta }: { meta: Metadata }) {
 
 export function EipDetail({ item }: { item: EipFile }) {
   const meta = [
-    `# ${item.kind}-${item.data.eip}: ${item.data.title}`,
+    `# ${item.eip}: ${item.data.title}`,
     `${item.data.type} / ${item.data.category} / ${item.data.status}`,
     `Authors: ${item.data.author}`,
     `Created: ${item.data.created.toISOString().split("T")[0]}`,
@@ -144,17 +158,16 @@ function EipListItem({
     { date: item.data.created },
     favorites.includes(item.data.eip) && { icon: Icon.Star },
   ].filter(Boolean);
-  const eip = `${item.kind}-${item.data.eip}`;
 
   return (
     <List.Item
-      key={eip}
+      key={item.eip}
       title={item.data.title ?? "??"}
-      subtitle={eip}
+      subtitle={item.eip}
       accessories={accessories}
       detail={<List.Item.Detail metadata={<EipMetadata meta={item.data} />} />}
       actions={
-        <ActionPanel title={`${eip}: ${item.data.title}`}>
+        <ActionPanel title={`${item.eip}: ${item.data.title}`}>
           <Action.Push title="Instant View" icon={Icon.Book} target={<EipDetail item={item} />} />
           <Action.OpenInBrowser url={item.github} title="GitHub" />
           <Action.OpenInBrowser
@@ -182,22 +195,8 @@ export default function Command() {
   const [searchText, setSearchText] = useState("");
   const preferences = getPreferenceValues<Preferences>();
   const { value: favorites, setValue: set_favorites } = useLocalStorage<number[]>("favorite_eips", []);
-  const base = preferences.repos_path;
 
-  const eips = useMemo(() => {
-    const files = globSync([`${base}/EIPs/EIPS/eip-*.md`, `${base}/ERCs/ERCS/erc-*.md`]);
-    const matters = files.map((path) => {
-      const md = matter(fs.readFileSync(path));
-      return {
-        data: md.data as Metadata,
-        content: md.content,
-        kind: (path.toLowerCase().includes("/eip-") ? "EIP" : "ERC") as EipKind,
-        github: path_to_github(path, base),
-      };
-    });
-    return matters.filter((item) => item.data.status !== "Moved");
-  }, []);
-
+  const eips = useMemo(() => load_eips_from_disk(preferences.repos_path), []);
   const fuse = new Fuse(eips, fuse_options);
   const data: EipFile[] = searchText ? fuse.search(searchText).map((item) => item.item) : eips;
 
