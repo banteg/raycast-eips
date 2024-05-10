@@ -84,9 +84,16 @@ export function EipMetadata({ meta }: { meta: Metadata }) {
 }
 
 export function EipDetail({ item }: { item: EipFile }) {
+  const meta = [
+    `# ${item.kind}-${item.data.eip}: ${item.data.title}`,
+    `${item.data.type} / ${item.data.category} / ${item.data.status}`,
+    `Authors: ${item.data.author}`,
+    `Created: ${item.data.created.toISOString().split("T")[0]}`,
+  ].join("\n\n");
+
   return (
     <Detail
-      markdown={item.content}
+      markdown={[meta, item.content].join("\n\n")}
       actions={
         <ActionPanel>
           <Action.OpenInBrowser url={item.github} title="GitHub" />
