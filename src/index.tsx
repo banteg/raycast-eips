@@ -84,20 +84,6 @@ function load_eips_from_disk(base: string) {
   return matters.filter((item) => item.data.status !== "Moved");
 }
 
-export function EipMetadata({ meta }: { meta: Metadata }) {
-  return (
-    <List.Item.Detail.Metadata>
-      <List.Item.Detail.Metadata.Label title="eip" text={meta.eip.toString()} />
-      <List.Item.Detail.Metadata.Label title="title" text={meta.title} />
-      <List.Item.Detail.Metadata.Label title="author" text={meta.author} />
-      <List.Item.Detail.Metadata.Label title="created" text={meta.created.toISOString()} />
-      <List.Item.Detail.Metadata.TagList title="type / category / status">
-        <List.Item.Detail.Metadata.TagList.Item text={meta.type} color={type_colors[meta.type]} />
-        <List.Item.Detail.Metadata.TagList.Item text={meta.category} color={category_colors[meta.category]} />
-        <List.Item.Detail.Metadata.TagList.Item text={meta.status} color={status_colors[meta.status]} />
-      </List.Item.Detail.Metadata.TagList>
-    </List.Item.Detail.Metadata>
-  );
 }
 
 export function EipDetail({ item }: { item: EipFile }) {
@@ -165,7 +151,6 @@ function EipListItem({
       title={item.data.title ?? "??"}
       subtitle={item.eip}
       accessories={accessories}
-      detail={<List.Item.Detail metadata={<EipMetadata meta={item.data} />} />}
       actions={
         <ActionPanel title={`${item.eip}: ${item.data.title}`}>
           <Action.Push title="Instant View" icon={Icon.Book} target={<EipDetail item={item} />} />
